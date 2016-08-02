@@ -26,6 +26,10 @@
     <name>Codenvy Plugin :: Hosted :: Machine</name>
     <dependencies>
         <dependency>
+            <groupId>com.amazonaws</groupId>
+            <artifactId>aws-java-sdk-ecr</artifactId>
+        </dependency>
+        <dependency>
             <groupId>com.codenvy.hosted-infrastructure</groupId>
             <artifactId>codenvy-hosted-machine-authentication</artifactId>
         </dependency>
