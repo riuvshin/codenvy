@@ -295,6 +295,8 @@ public class OnPremisesIdeApiModule extends AbstractModule {
         install(new ScheduleModule());
 
         bind(org.eclipse.che.plugin.docker.client.DockerConnector.class).to(com.codenvy.swarm.client.SwarmDockerConnector.class);
+        bind(org.eclipse.che.plugin.docker.client.DockerRegistryDynamicAuthResolver.class)
+                .to(com.codenvy.swarm.client.AwsEcrAuthResolver.class);
 
         bind(String.class).annotatedWith(Names.named("machine.docker.machine_env"))
                           .toProvider(com.codenvy.machine.MaintenanceConstraintProvider.class);

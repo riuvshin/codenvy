@@ -13,6 +13,7 @@ package com.codenvy.swarm.client;
 import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.ecr.AmazonECRClient;
+import com.amazonaws.services.ecr.model.AmazonECRException;
 import com.amazonaws.services.ecr.model.AuthorizationData;
 import com.amazonaws.services.ecr.model.GetAuthorizationTokenRequest;
 import com.amazonaws.services.ecr.model.GetAuthorizationTokenResult;
@@ -94,17 +95,22 @@ public class AwsEcrAuthResolver implements DockerRegistryDynamicAuthResolver {
     }
 
     private String getAwsAuthorizationToken() {
-        // TODO catch all Exceptions
-        AWSCredentials credentials = new BasicAWSCredentials(awsInitialAuthConfig.getAccessKeyId(),
-                                                             awsInitialAuthConfig.getSecretAccessKey());
-        AmazonECRClient amazonECRClient = new AmazonECRClient(credentials);
-        GetAuthorizationTokenResult tokenResult = amazonECRClient.getAuthorizationToken(new GetAuthorizationTokenRequest());
-        List<AuthorizationData> authData = tokenResult.getAuthorizationData();
-        if (authData.isEmpty() || authData.get(0).getAuthorizationToken() == null) {
-            LOG.warn("Failed to retrieve AWS ECR token");
+        try {
+            AWSCredentials credentials = new BasicAWSCredentials(awsInitialAuthConfig.getAccessKeyId(),
+                                                                 awsInitialAuthConfig.getSecretAccessKey());
+            AmazonECRClient amazonECRClient = new AmazonECRClient(credentials);
+            GetAuthorizationTokenResult tokenResult = amazonECRClient.getAuthorizationToken(new GetAuthorizationTokenRequest());
+            List<AuthorizationData> authData = tokenResult.getAuthorizationData();
+
+            if (authData.isEmpty() || authData.get(0).getAuthorizationToken() == null) {
+                LOG.warn("Failed to retrieve AWS ECR token");
+                return null;
+            }
+            return authData.get(0).getAuthorizationToken();
+        } catch (AmazonECRException e) {
+            LOG.warn(e.getLocalizedMessage());
             return null;
         }
-        return authData.get(0).getAuthorizationToken();
     }
 
 }
