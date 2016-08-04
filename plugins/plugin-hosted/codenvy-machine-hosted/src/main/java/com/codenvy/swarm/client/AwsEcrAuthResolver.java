@@ -21,6 +21,7 @@ import com.amazonaws.services.ecr.model.AmazonECRException;
 import com.amazonaws.services.ecr.model.AuthorizationData;
 import com.amazonaws.services.ecr.model.GetAuthorizationTokenRequest;
 import com.amazonaws.services.ecr.model.GetAuthorizationTokenResult;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
@@ -69,7 +70,13 @@ public class AwsEcrAuthResolver implements DockerRegistryDynamicAuthResolver {
         if (authorizationToken == null) {
             return null;
         }
-        String decodedAuthorizationToken = new String(Base64.getDecoder().decode(authorizationToken));
+        String decodedAuthorizationToken;
+        try {
+            decodedAuthorizationToken = new String(Base64.getDecoder().decode(authorizationToken));
+        } catch (IllegalArgumentException e) {
+            LOG.warn("Retrieved AWS ECR authorization token has invalid format");
+            return null;
+        }
         int colonIndex = decodedAuthorizationToken.indexOf(':');
         if (colonIndex == -1) {
             LOG.warn("Cannot retrieve ECR credentials from token");
@@ -98,7 +105,8 @@ public class AwsEcrAuthResolver implements DockerRegistryDynamicAuthResolver {
         return dynamicAuthConfigs;
     }
 
-    private String getAwsAuthorizationToken() {
+    @VisibleForTesting
+    String getAwsAuthorizationToken() {
         try {
             AWSCredentials credentials = new BasicAWSCredentials(awsInitialAuthConfig.getAccessKeyId(),
                                                                  awsInitialAuthConfig.getSecretAccessKey());

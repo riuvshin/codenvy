@@ -43,14 +43,13 @@ public class AwsInitialAuthConfig {
                                 @Nullable @Named("aws.region") String awsRegion,
                                 @Nullable @Named("aws.access-key-id") String accessKeyId,
                                 @Nullable @Named("aws.secret-access-key") String secretAccessKey) {
-
-        this.awsAccountId = awsId;
-        this.region = awsRegion;
-        this.accessKeyId = accessKeyId;
-        this.secretAccessKey = secretAccessKey;
-
         if (isNullOrEmpty(awsId) && isNullOrEmpty(awsRegion) && isNullOrEmpty(accessKeyId) && isNullOrEmpty(secretAccessKey)) {
-            ecr = null;
+            this.awsAccountId = null;
+            this.region = null;
+            this.accessKeyId = null;
+            this.secretAccessKey = null;
+
+            this.ecr = null;
             return;
         } else {
             if (isNullOrEmpty(awsId)) {
@@ -71,7 +70,12 @@ public class AwsInitialAuthConfig {
             throw new IllegalArgumentException("AWS Account Id has wrong format");
         }
 
-        ecr = awsAccountId + ".dkr.ecr." + region + ".amazonaws.com";
+        this.awsAccountId = awsId;
+        this.region = awsRegion;
+        this.accessKeyId = accessKeyId;
+        this.secretAccessKey = secretAccessKey;
+
+        this.ecr = awsAccountId + ".dkr.ecr." + region + ".amazonaws.com";
     }
 
     public String getAwsAccountId() {
